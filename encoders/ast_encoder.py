@@ -1,3 +1,4 @@
+#ast_encoder
 import torch
 from torch_geometric.graphgym.register import (register_node_encoder,
                                                register_edge_encoder)
@@ -83,3 +84,4 @@ class ASTEdgeEncoder(torch.nn.Module):
                     self.embedding_direction(batch.edge_attr[:, 1])
         batch.edge_attr = embedding
         return batch
+

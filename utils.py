@@ -641,7 +641,7 @@ def save_model(state_dict, dir, appendix, cmd, git_hash, hostname, args):
     return model_folder / 'model.pt'
 
 def load_model(model, load_model_path):
-    dump = torch.load(load_model_path)
+    dump = torch.load(load_model_path, map_location=torch.device('cpu'))
     ## for backward compatibility
     if "weights"  in dump:
         model.load_state_dict(dump['weights'])
