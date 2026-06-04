@@ -1,0 +1,170 @@
+posenc_LapPE:
+  enable: True
+  eigen:
+    laplacian_norm: none
+    eigvec_norm: L2
+    max_freqs: 1
+  model: DeepSet
+  dim_pe: 20
+  layers: 2
+  n_heads: 4
+  raw_norm_type: none
+  pass_as_var: True
+
+posenc_EquivStableLapPE:
+  enable: True
+  eigen:
+    laplacian_norm: none
+    eigvec_norm: L2
+    max_freqs: 10
+  raw_norm_type: none
+  dim_pe_new: 20
+
+posenc_RWSE:
+  enable: True
+  kernel:
+    times: [1,2,3,4,5]
+  model: linear
+  dim_pe: 20
+  raw_norm_type: BatchNorm
+  pass_as_var: True
+  layers: 2
+posenc_HKdiagSE:
+  enable: True
+  kernel:
+    times: [1,2,3,4,5]
+  model: linear
+  dim_pe: 20
+  raw_norm_type: BatchNorm
+  pass_as_var: True
+  layers: 2
+posenc_ElstaticSE:
+  enable: True
+  model: linear
+  dim_pe: 20
+  raw_norm_type: BatchNorm
+  pass_as_var: True
+  layers: 2
+  kernel:
+    times: [1,2,3,4,5,6,7,8,9,10]
+
+posenc_SignNet:
+  enable: True
+  eigen:
+    laplacian_norm: none
+    eigvec_norm: L2
+    max_freqs: 20  # Max graph size in molpcba is 332, but 97.1% are <= 37
+  model: DeepSet
+  dim_pe: 20  # Note: In original SignNet codebase dim_pe is always equal to max_freq
+  layers: 8  # Num. layers in \phi model
+  post_layers: 3  # Num. layers in \rho model; The original uses the same as in \phi
+  phi_hidden_dim: 64
+  phi_out_dim: 64
+  pass_as_var: True
+
+# 边级编码器配置
+posenc_ShortestPathEdge:
+  enable: True
+  max_path_length: 10  # 考虑的最大路径长度
+  model: mlp
+  dim_pe: 20
+  layers: 2
+  n_heads: 4
+  raw_norm_type: batchnorm
+  pass_as_var: True
+
+posenc_HeatKernelEdge:
+  enable: True
+  kernel:
+    times: [0.1, 0.5, 1.0, 2.0, 5.0]  # 热核扩散时间步
+  model: mlp
+  dim_pe: 20
+  layers: 2
+  raw_norm_type: batchnorm
+  pass_as_var: True
+
+posenc_RandomWalkEdge:
+  enable: True
+  kernel:
+    steps: [1, 2, 3, 4, 5]  # 随机游走步数
+  model: mlp
+  dim_pe: 20
+  layers: 2
+  n_heads: 4
+  raw_norm_type: batchnorm
+  pass_as_var: True
+
+posenc_MultiScaleEdge:
+  enable: True
+  encoders: ['ShortestPathEdge', 'HeatKernelEdge', 'RandomWalkEdge']
+  fusion: 'concat'  # 'concat', 'attention', 'mlp'
+  dim_pe_out: 20
+  pass_as_var: True
+
+# 图级编码器配置
+posenc_SpectralGraph:
+  enable: True
+  max_freqs: 20  # 使用多少个特征值
+  eigenval_type: 'lap'  # 'adj' 或 'lap'
+  model: 'mlp'  # 'mlp' 或 'deep_set'
+  dim_pe: 20
+  layers: 2
+  raw_norm_type: batchnorm
+  pass_as_var: True
+
+posenc_DegreeDistribution:
+  enable: True
+  max_degree: 20  # 最大考虑度
+  degree_histogram_bins: 21  # 直方图桶数量
+  model: 'mlp'  # 'mlp' 或 'cnn'
+  dim_pe: 20
+  layers: 2
+  raw_norm_type: batchnorm
+  pass_as_var: True
+
+posenc_ClusteringCoefficient:
+  enable: True
+  num_histogram_bins: 10  # 聚类系数分布直方图的桶数
+  model: 'mlp'
+  dim_pe: 20
+  layers: 2
+  raw_norm_type: batchnorm
+  pass_as_var: True
+
+posenc_MultiFeatureGraph:
+  enable: True
+  encoders: ['SpectralGraph', 'DegreeDistribution', 'ClusteringCoefficient']
+  fusion: 'concat'  # 'concat' 或 'attention'
+  dim_pe: 20
+  layers: 2
+  num_heads: 4  # 用于attention融合
+  pass_as_var: True
+
+dataset:
+  node_encoder_LapPE_bn: False
+  node_encoder_SignNet_bn: False
+  node_encoder_RWSE_bn: False
+  node_encoder_HKdiagSE_bn: False
+  node_encoder_ElstaticSE_bn: False
+  node_encoder_EquivStableLapPE_bn: False
+  edge_encoder_enabled: True
+  global_encoder_enabled: True
+
+in_channels: 20
+hidden_channels: 32
+out_channels: 1
+activation: 'relu'
+n_layers: 2
+dropout: 0.5
+coarsening_ratio: 0.5
+layer_norm: False
+raw_node_feature: 9  # 修改为实际节点特征维度
+pe_types: ['LapPE', 'EquivStableLapPE', 'SignNet','RWSE', 'ElstaticSE','HKdiagSE']
+edge_types: ['ShortestPathEdge', 'HeatKernelEdge', 'RandomWalkEdge', 'MultiScaleEdge']
+global_types: ['SpectralGraph', 'DegreeDistribution', 'ClusteringCoefficient', 'MultiFeatureGraph']
+edge_feature_dim: 3
+n_heads: 8
+temperature: 1
+task_type: 'classification'
+alpha: 0.1
+beta: 0.05
