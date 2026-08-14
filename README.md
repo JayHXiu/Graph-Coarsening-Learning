@@ -142,6 +142,3 @@ python scripts/evaluate.py --dataset BACE --checkpoint models/BACE_best.pt --con
 2. **显存**：DiffPool 采用批内稠密表示，大图或较大 `batch_size` 时注意显存占用。
 3. **可复现**：固定 `--seed` 以保证划分与初始化一致。
 
-## 引用
-
-使用 MoleculeNet 作为测试基准时请引用其原始论文。若采用本仓库中的图粗化与多视图融合设计，请同时引用 DiffPool、相关位置编码（LapPE、SignNet 等）等方法的原始文献。
